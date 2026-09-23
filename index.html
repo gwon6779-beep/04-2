@@ -5,9 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>틱택토 ⭕❌</title>
 <style>
+  :root {
+    --o-color: #2563eb;
+    --x-color: #e11d48;
+    --bg-color: #f3f4f6;
+    --cell-bg: #ffffff;
+    --cell-bg-hover: #eef2ff;
+    --win-bg: #fde68a;
+    --text-color: #1f2937;
+    --muted-color: #6b7280;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     margin: 0;
-    padding: 20px;
+    padding: 24px 16px;
+    min-height: 100vh;
+    background: var(--bg-color);
+    color: var(--text-color);
+    font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -16,31 +35,117 @@
 
   h1 {
     margin: 0;
+    font-size: 1.8rem;
   }
 
   #scoreboard {
     display: flex;
-    gap: 16px;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #scoreboard span {
+    background: var(--cell-bg);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  #score-o {
+    color: var(--o-color);
+  }
+
+  #score-x {
+    color: var(--x-color);
   }
 
   #status {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+    min-height: 2.2rem;
+  }
+
+  #status.game-over {
+    color: #059669;
   }
 
   #board {
     display: grid;
-    grid-template-columns: repeat(3, 80px);
-    grid-template-rows: repeat(3, 80px);
-    gap: 4px;
+    grid-template-columns: repeat(3, 90px);
+    grid-template-rows: repeat(3, 90px);
+    gap: 6px;
+    background: #d1d5db;
+    padding: 6px;
+    border-radius: 12px;
   }
 
   .cell {
-    font-size: 2rem;
+    font-size: 2.4rem;
+    font-weight: 700;
+    background: var(--cell-bg);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  .cell:hover:not(.o-mark):not(.x-mark) {
+    background: var(--cell-bg-hover);
+  }
+
+  .cell.o-mark {
+    color: var(--o-color);
+    cursor: default;
+  }
+
+  .cell.x-mark {
+    color: var(--x-color);
+    cursor: default;
+  }
+
+  #board.locked .cell:not(.o-mark):not(.x-mark) {
+    cursor: default;
+  }
+
+  .cell.win-cell {
+    background: var(--win-bg);
+    animation: pop 0.3s ease;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+    100% { transform: scale(1); }
   }
 
   #next-round-btn {
-    padding: 8px 16px;
+    padding: 10px 20px;
     font-size: 1rem;
+    font-weight: 600;
+    color: #fff;
+    background: #4f46e5;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+  }
+
+  #next-round-btn:hover {
+    background: #4338ca;
+  }
+
+  @media (max-width: 380px) {
+    #board {
+      grid-template-columns: repeat(3, 26vw);
+      grid-template-rows: repeat(3, 26vw);
+    }
+
+    .cell {
+      font-size: 8vw;
+    }
   }
 </style>
 </head>
@@ -77,6 +182,7 @@
     ];
 
     const cellEls = Array.from(document.querySelectorAll('.cell'));
+    const boardEl = document.getElementById('board');
     const statusEl = document.getElementById('status');
     const scoreOEl = document.getElementById('score-o');
     const scoreXEl = document.getElementById('score-x');
@@ -119,6 +225,7 @@
 
       board[index] = currentPlayer;
       cellEls[index].textContent = currentPlayer;
+      cellEls[index].classList.add(currentPlayer === 'O' ? 'o-mark' : 'x-mark');
 
       const result = checkWin();
       if (result) {
@@ -126,6 +233,8 @@
         score[result.winner] += 1;
         updateScoreboard();
         updateStatus(`${result.winner} 승리!`);
+        statusEl.classList.add('game-over');
+        boardEl.classList.add('locked');
         result.line.forEach((i) => cellEls[i].classList.add('win-cell'));
         return;
       }
@@ -135,6 +244,8 @@
         score.draw += 1;
         updateScoreboard();
         updateStatus('무승부');
+        statusEl.classList.add('game-over');
+        boardEl.classList.add('locked');
         return;
       }
 
@@ -148,8 +259,10 @@
       gameOver = false;
       cellEls.forEach((cell) => {
         cell.textContent = '';
-        cell.classList.remove('win-cell');
+        cell.classList.remove('win-cell', 'o-mark', 'x-mark');
       });
+      boardEl.classList.remove('locked');
+      statusEl.classList.remove('game-over');
       updateStatus(`지금 차례: ${currentPlayer}`);
     }
 
