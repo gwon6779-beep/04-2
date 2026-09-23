@@ -62,6 +62,11 @@
     color: var(--x-color);
   }
 
+  #player-legend {
+    color: var(--muted-color);
+    font-size: 0.9rem;
+  }
+
   #status {
     font-size: 1.6rem;
     font-weight: 700;
@@ -121,20 +126,37 @@
     100% { transform: scale(1); }
   }
 
-  #next-round-btn {
+  #controls {
+    display: flex;
+    gap: 10px;
+  }
+
+  #next-round-btn,
+  #reset-btn {
     padding: 10px 20px;
     font-size: 1rem;
     font-weight: 600;
     color: #fff;
-    background: #4f46e5;
     border: none;
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.15s ease;
   }
 
+  #next-round-btn {
+    background: #4f46e5;
+  }
+
   #next-round-btn:hover {
     background: #4338ca;
+  }
+
+  #reset-btn {
+    background: #6b7280;
+  }
+
+  #reset-btn:hover {
+    background: #4b5563;
   }
 
   @media (max-width: 380px) {
@@ -158,6 +180,8 @@
     <span id="score-draw">무승부: 0</span>
   </div>
 
+  <div id="player-legend">컴퓨터 = X · 사람 = O</div>
+
   <div id="status" aria-live="polite">지금 차례: O</div>
 
   <div id="board">
@@ -172,7 +196,10 @@
     <button class="cell" data-index="8" aria-label="3행 3열, 빈 칸"></button>
   </div>
 
-  <button id="next-round-btn">다음 판</button>
+  <div id="controls">
+    <button id="next-round-btn">다음 판</button>
+    <button id="reset-btn">초기화</button>
+  </div>
 
   <script>
     const WIN_LINES = [
@@ -188,9 +215,14 @@
     const scoreXEl = document.getElementById('score-x');
     const scoreDrawEl = document.getElementById('score-draw');
     const nextRoundBtn = document.getElementById('next-round-btn');
+    const resetBtn = document.getElementById('reset-btn');
+
+    const HUMAN = 'O';
+    const COMPUTER = 'X';
+    const COMPUTER_DELAY_MS = 500;
 
     let board = Array(9).fill(null);
-    let currentPlayer = 'O';
+    let currentPlayer = HUMAN;
     let gameOver = false;
     let score = { O: 0, X: 0, draw: 0 };
 
@@ -218,14 +250,10 @@
       scoreDrawEl.textContent = `무승부: ${score.draw}`;
     }
 
-    function handleCellClick(index) {
-      if (gameOver || board[index] !== null) {
-        return;
-      }
-
-      board[index] = currentPlayer;
-      cellEls[index].textContent = currentPlayer;
-      cellEls[index].classList.add(currentPlayer === 'O' ? 'o-mark' : 'x-mark');
+    function placeMark(player, index) {
+      board[index] = player;
+      cellEls[index].textContent = player;
+      cellEls[index].classList.add(player === 'O' ? 'o-mark' : 'x-mark');
 
       const result = checkWin();
       if (result) {
@@ -249,13 +277,65 @@
         return;
       }
 
-      currentPlayer = currentPlayer === 'O' ? 'X' : 'O';
+      currentPlayer = player === 'O' ? 'X' : 'O';
       updateStatus(`지금 차례: ${currentPlayer}`);
+
+      if (!gameOver && currentPlayer === COMPUTER) {
+        setTimeout(computerMove, COMPUTER_DELAY_MS);
+      }
+    }
+
+    function handleCellClick(index) {
+      if (gameOver || board[index] !== null || currentPlayer !== HUMAN) {
+        return;
+      }
+      placeMark(HUMAN, index);
+    }
+
+    function findWinningMove(player) {
+      for (const line of WIN_LINES) {
+        const marks = line.map((i) => board[i]);
+        const emptyIndex = line[marks.indexOf(null)];
+        const playerCount = marks.filter((m) => m === player).length;
+        if (playerCount === 2 && marks.includes(null)) {
+          return emptyIndex;
+        }
+      }
+      return null;
+    }
+
+    function computerMove() {
+      if (gameOver) {
+        return;
+      }
+
+      const emptyIndexes = board
+        .map((cell, i) => (cell === null ? i : null))
+        .filter((i) => i !== null);
+
+      let index = findWinningMove(COMPUTER);
+      if (index === null) {
+        index = findWinningMove(HUMAN);
+      }
+      if (index === null && board[4] === null) {
+        index = 4;
+      }
+      if (index === null) {
+        const corners = [0, 2, 6, 8].filter((i) => board[i] === null);
+        if (corners.length > 0) {
+          index = corners[Math.floor(Math.random() * corners.length)];
+        }
+      }
+      if (index === null) {
+        index = emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
+      }
+
+      placeMark(COMPUTER, index);
     }
 
     function startNextRound() {
       board = Array(9).fill(null);
-      currentPlayer = 'O';
+      currentPlayer = HUMAN;
       gameOver = false;
       cellEls.forEach((cell) => {
         cell.textContent = '';
@@ -266,11 +346,18 @@
       updateStatus(`지금 차례: ${currentPlayer}`);
     }
 
+    function resetGame() {
+      score = { O: 0, X: 0, draw: 0 };
+      updateScoreboard();
+      startNextRound();
+    }
+
     cellEls.forEach((cell, index) => {
       cell.addEventListener('click', () => handleCellClick(index));
     });
 
     nextRoundBtn.addEventListener('click', startNextRound);
+    resetBtn.addEventListener('click', resetGame);
   </script>
 </body>
 </html>
