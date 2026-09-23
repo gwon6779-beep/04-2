@@ -68,5 +68,96 @@
   </div>
 
   <button id="next-round-btn">다음 판</button>
+
+  <script>
+    const WIN_LINES = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8], // 가로
+      [0, 3, 6], [1, 4, 7], [2, 5, 8], // 세로
+      [0, 4, 8], [2, 4, 6]             // 대각선
+    ];
+
+    const cellEls = Array.from(document.querySelectorAll('.cell'));
+    const statusEl = document.getElementById('status');
+    const scoreOEl = document.getElementById('score-o');
+    const scoreXEl = document.getElementById('score-x');
+    const scoreDrawEl = document.getElementById('score-draw');
+    const nextRoundBtn = document.getElementById('next-round-btn');
+
+    let board = Array(9).fill(null);
+    let currentPlayer = 'O';
+    let gameOver = false;
+    let score = { O: 0, X: 0, draw: 0 };
+
+    function checkWin() {
+      for (const line of WIN_LINES) {
+        const [a, b, c] = line;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          return { winner: board[a], line };
+        }
+      }
+      return null;
+    }
+
+    function isBoardFull() {
+      return board.every((cell) => cell !== null);
+    }
+
+    function updateStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function updateScoreboard() {
+      scoreOEl.textContent = `O 승: ${score.O}`;
+      scoreXEl.textContent = `X 승: ${score.X}`;
+      scoreDrawEl.textContent = `무승부: ${score.draw}`;
+    }
+
+    function handleCellClick(index) {
+      if (gameOver || board[index] !== null) {
+        return;
+      }
+
+      board[index] = currentPlayer;
+      cellEls[index].textContent = currentPlayer;
+
+      const result = checkWin();
+      if (result) {
+        gameOver = true;
+        score[result.winner] += 1;
+        updateScoreboard();
+        updateStatus(`${result.winner} 승리!`);
+        result.line.forEach((i) => cellEls[i].classList.add('win-cell'));
+        return;
+      }
+
+      if (isBoardFull()) {
+        gameOver = true;
+        score.draw += 1;
+        updateScoreboard();
+        updateStatus('무승부');
+        return;
+      }
+
+      currentPlayer = currentPlayer === 'O' ? 'X' : 'O';
+      updateStatus(`지금 차례: ${currentPlayer}`);
+    }
+
+    function startNextRound() {
+      board = Array(9).fill(null);
+      currentPlayer = 'O';
+      gameOver = false;
+      cellEls.forEach((cell) => {
+        cell.textContent = '';
+        cell.classList.remove('win-cell');
+      });
+      updateStatus(`지금 차례: ${currentPlayer}`);
+    }
+
+    cellEls.forEach((cell, index) => {
+      cell.addEventListener('click', () => handleCellClick(index));
+    });
+
+    nextRoundBtn.addEventListener('click', startNextRound);
+  </script>
 </body>
 </html>
