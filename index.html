@@ -6,14 +6,19 @@
 <title>틱택토 ⭕❌</title>
 <style>
   :root {
-    --o-color: #2563eb;
-    --x-color: #e11d48;
-    --bg-color: #f3f4f6;
-    --cell-bg: #ffffff;
-    --cell-bg-hover: #eef2ff;
-    --win-bg: #fde68a;
-    --text-color: #1f2937;
-    --muted-color: #6b7280;
+    --o-color: #38bdf8;
+    --o-color-soft: rgba(56, 189, 248, 0.15);
+    --x-color: #fb7185;
+    --x-color-soft: rgba(251, 113, 133, 0.15);
+    --win-color: #fbbf24;
+    --bg-start: #0f172a;
+    --bg-end: #1e1b4b;
+    --card-bg: rgba(30, 41, 59, 0.65);
+    --card-border: rgba(148, 163, 184, 0.18);
+    --cell-bg: rgba(255, 255, 255, 0.04);
+    --cell-bg-hover: rgba(255, 255, 255, 0.09);
+    --text-color: #e2e8f0;
+    --muted-color: #94a3b8;
   }
 
   * {
@@ -22,36 +27,56 @@
 
   body {
     margin: 0;
-    padding: 24px 16px;
+    padding: 32px 16px;
     min-height: 100vh;
-    background: var(--bg-color);
+    background: radial-gradient(circle at 50% -10%, #312e81 0%, var(--bg-start) 45%, var(--bg-end) 100%);
     color: var(--text-color);
     font-family: -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
     display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: 18px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 28px 24px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
   }
 
   h1 {
     margin: 0;
-    font-size: 1.8rem;
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    background: linear-gradient(90deg, var(--o-color), var(--x-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 
   #scoreboard {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
     justify-content: center;
   }
 
   #scoreboard span {
-    background: var(--cell-bg);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--card-border);
     border-radius: 999px;
     padding: 6px 14px;
-    font-weight: 600;
-    font-size: 0.95rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    font-weight: 700;
+    font-size: 0.9rem;
   }
 
   #score-o {
@@ -62,52 +87,65 @@
     color: var(--x-color);
   }
 
-  #player-legend {
+  #score-draw {
     color: var(--muted-color);
-    font-size: 0.9rem;
+  }
+
+  #player-legend {
+    margin-top: -8px;
+    color: var(--muted-color);
+    font-size: 0.82rem;
   }
 
   #status {
-    font-size: 1.6rem;
-    font-weight: 700;
-    min-height: 2.2rem;
+    font-size: 1.4rem;
+    font-weight: 800;
+    min-height: 1.8rem;
+    transition: color 0.2s ease;
   }
 
   #status.game-over {
-    color: #059669;
+    color: var(--win-color);
+    text-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
   }
 
   #board {
     display: grid;
-    grid-template-columns: repeat(3, 90px);
-    grid-template-rows: repeat(3, 90px);
-    gap: 6px;
-    background: #d1d5db;
-    padding: 6px;
-    border-radius: 12px;
+    grid-template-columns: repeat(3, 92px);
+    grid-template-rows: repeat(3, 92px);
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    padding: 8px;
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
   }
 
   .cell {
-    font-size: 2.4rem;
-    font-weight: 700;
+    font-size: 2.5rem;
+    font-weight: 800;
     background: var(--cell-bg);
-    border: none;
-    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
     cursor: pointer;
-    transition: background-color 0.15s ease, transform 0.15s ease;
+    transition: background-color 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
   }
 
   .cell:hover:not(.o-mark):not(.x-mark) {
     background: var(--cell-bg-hover);
+    border-color: rgba(148, 163, 184, 0.4);
   }
 
   .cell.o-mark {
     color: var(--o-color);
+    background: var(--o-color-soft);
+    text-shadow: 0 0 14px rgba(56, 189, 248, 0.6);
     cursor: default;
   }
 
   .cell.x-mark {
     color: var(--x-color);
+    background: var(--x-color-soft);
+    text-shadow: 0 0 14px rgba(251, 113, 133, 0.6);
     cursor: default;
   }
 
@@ -116,13 +154,14 @@
   }
 
   .cell.win-cell {
-    background: var(--win-bg);
-    animation: pop 0.3s ease;
+    border-color: var(--win-color);
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.55);
+    animation: pop 0.35s ease;
   }
 
   @keyframes pop {
     0% { transform: scale(1); }
-    50% { transform: scale(1.12); }
+    50% { transform: scale(1.14); }
     100% { transform: scale(1); }
   }
 
@@ -133,33 +172,41 @@
 
   #next-round-btn,
   #reset-btn {
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
+    padding: 11px 22px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 999px;
     cursor: pointer;
-    transition: background-color 0.15s ease;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
   }
 
   #next-round-btn {
-    background: #4f46e5;
+    color: #0f172a;
+    border: none;
+    background: linear-gradient(90deg, var(--o-color), #818cf8);
   }
 
   #next-round-btn:hover {
-    background: #4338ca;
+    transform: translateY(-1px);
+    opacity: 0.92;
   }
 
   #reset-btn {
-    background: #6b7280;
+    color: var(--text-color);
+    background: transparent;
+    border: 1px solid var(--card-border);
   }
 
   #reset-btn:hover {
-    background: #4b5563;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
   }
 
   @media (max-width: 380px) {
+    .card {
+      padding: 22px 16px;
+    }
+
     #board {
       grid-template-columns: repeat(3, 26vw);
       grid-template-rows: repeat(3, 26vw);
@@ -172,33 +219,35 @@
 </style>
 </head>
 <body>
-  <h1>틱택토 ⭕❌</h1>
+  <div class="card">
+    <h1>틱택토 ⭕❌</h1>
 
-  <div id="scoreboard">
-    <span id="score-o">O 승: 0</span>
-    <span id="score-x">X 승: 0</span>
-    <span id="score-draw">무승부: 0</span>
-  </div>
+    <div id="scoreboard">
+      <span id="score-o">O 승: 0</span>
+      <span id="score-x">X 승: 0</span>
+      <span id="score-draw">무승부: 0</span>
+    </div>
 
-  <div id="player-legend">컴퓨터 = X · 사람 = O</div>
+    <div id="player-legend">컴퓨터 = X · 사람 = O</div>
 
-  <div id="status" aria-live="polite">지금 차례: O</div>
+    <div id="status" aria-live="polite">지금 차례: O</div>
 
-  <div id="board">
-    <button class="cell" data-index="0" aria-label="1행 1열, 빈 칸"></button>
-    <button class="cell" data-index="1" aria-label="1행 2열, 빈 칸"></button>
-    <button class="cell" data-index="2" aria-label="1행 3열, 빈 칸"></button>
-    <button class="cell" data-index="3" aria-label="2행 1열, 빈 칸"></button>
-    <button class="cell" data-index="4" aria-label="2행 2열, 빈 칸"></button>
-    <button class="cell" data-index="5" aria-label="2행 3열, 빈 칸"></button>
-    <button class="cell" data-index="6" aria-label="3행 1열, 빈 칸"></button>
-    <button class="cell" data-index="7" aria-label="3행 2열, 빈 칸"></button>
-    <button class="cell" data-index="8" aria-label="3행 3열, 빈 칸"></button>
-  </div>
+    <div id="board">
+      <button class="cell" data-index="0" aria-label="1행 1열, 빈 칸"></button>
+      <button class="cell" data-index="1" aria-label="1행 2열, 빈 칸"></button>
+      <button class="cell" data-index="2" aria-label="1행 3열, 빈 칸"></button>
+      <button class="cell" data-index="3" aria-label="2행 1열, 빈 칸"></button>
+      <button class="cell" data-index="4" aria-label="2행 2열, 빈 칸"></button>
+      <button class="cell" data-index="5" aria-label="2행 3열, 빈 칸"></button>
+      <button class="cell" data-index="6" aria-label="3행 1열, 빈 칸"></button>
+      <button class="cell" data-index="7" aria-label="3행 2열, 빈 칸"></button>
+      <button class="cell" data-index="8" aria-label="3행 3열, 빈 칸"></button>
+    </div>
 
-  <div id="controls">
-    <button id="next-round-btn">다음 판</button>
-    <button id="reset-btn">초기화</button>
+    <div id="controls">
+      <button id="next-round-btn">다음 판</button>
+      <button id="reset-btn">초기화</button>
+    </div>
   </div>
 
   <script>
