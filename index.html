@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>틱택토 ⭕❌</title>
+<style>
+  body {
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  h1 {
+    margin: 0;
+  }
+
+  #scoreboard {
+    display: flex;
+    gap: 16px;
+  }
+
+  #status {
+    font-size: 1.5rem;
+  }
+
+  #board {
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+    gap: 4px;
+  }
+
+  .cell {
+    font-size: 2rem;
+  }
+
+  #next-round-btn {
+    padding: 8px 16px;
+    font-size: 1rem;
+  }
+</style>
+</head>
+<body>
+  <h1>틱택토 ⭕❌</h1>
+
+  <div id="scoreboard">
+    <span id="score-o">O 승: 0</span>
+    <span id="score-x">X 승: 0</span>
+    <span id="score-draw">무승부: 0</span>
+  </div>
+
+  <div id="status" aria-live="polite">지금 차례: O</div>
+
+  <div id="board">
+    <button class="cell" data-index="0" aria-label="1행 1열, 빈 칸"></button>
+    <button class="cell" data-index="1" aria-label="1행 2열, 빈 칸"></button>
+    <button class="cell" data-index="2" aria-label="1행 3열, 빈 칸"></button>
+    <button class="cell" data-index="3" aria-label="2행 1열, 빈 칸"></button>
+    <button class="cell" data-index="4" aria-label="2행 2열, 빈 칸"></button>
+    <button class="cell" data-index="5" aria-label="2행 3열, 빈 칸"></button>
+    <button class="cell" data-index="6" aria-label="3행 1열, 빈 칸"></button>
+    <button class="cell" data-index="7" aria-label="3행 2열, 빈 칸"></button>
+    <button class="cell" data-index="8" aria-label="3행 3열, 빈 칸"></button>
+  </div>
+
+  <button id="next-round-btn">다음 판</button>
+</body>
+</html>
